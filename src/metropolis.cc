@@ -1,6 +1,7 @@
 #include "metropolis.hh"
 
 #include <random>
+#include <algorithm>
 
 static cmkv::image<float> create_pscores(
     int width, int height,
@@ -25,9 +26,10 @@ static cmkv::rgb8_t change_pixel_random(
     std::normal_distribution<float> &normal_dist,
     std::mt19937 &gen)
 {
-    pix.r += normal_dist(gen);
-    pix.g += normal_dist(gen);
-    pix.b += normal_dist(gen);
+    pix.r = std::clamp<std::uint8_t>(pix.r + normal_dist(gen), 0, 255);
+    pix.b = std::clamp<std::uint8_t>(pix.b + normal_dist(gen), 0, 255);
+    pix.g = std::clamp<std::uint8_t>(pix.g + normal_dist(gen), 0, 255);
+
     return pix;
 }
 

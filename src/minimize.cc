@@ -10,7 +10,6 @@ namespace cmkv
     static std::uint8_t binarize_human(rgb8_t pix)
     {
         auto luminance = 0.299 * pix.r + 0.587 * pix.g + 0.114 * pix.b;
-        std::cerr << luminance << '\n';
         auto is_white = luminance >= 128;
 
         return is_white ? 255 : 0;
@@ -42,9 +41,9 @@ namespace cmkv
 
     image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img)
     {
-        constexpr size_t N = 10000000;
+        constexpr size_t N = 100000;
         constexpr float T_init = 1000;
-        constexpr float normal_std = 0.01;
+        constexpr float normal_std = 8;
 
         auto bin_img = binarize_img(img);
 
