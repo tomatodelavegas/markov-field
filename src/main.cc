@@ -3,8 +3,7 @@
 #include "image.hh"
 #include "minimize.hh"
 
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
   if (argc != 3)
   {
@@ -14,7 +13,7 @@ int main(int argc, char* argv[])
 
   FreeImage_Initialise();
 
-  auto input = cmkv::convert_gray(cmkv::io::read(argv[1]));
+  auto input = cmkv::io::read(argv[1]);
   auto output = cmkv::minimize(input);
   cmkv::io::write(argv[2], output);
 
