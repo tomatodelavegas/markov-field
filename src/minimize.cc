@@ -39,12 +39,8 @@ namespace cmkv
         return std::sqrt(normsqr);
     }
 
-    image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img)
+    image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img, const params &params)
     {
-        constexpr size_t N = 100000;
-        constexpr float T_init = 1000;
-        constexpr float normal_std = 8;
-
         auto bin_img = binarize_img(img);
 
         auto score = [&img, &bin_img](int x, int y) {
@@ -59,7 +55,7 @@ namespace cmkv
             return bin_score;
         };
 
-        metropolis(img, score, N, T_init, normal_std);
+        metropolis(img, score, params);
 
         return binarize_img(img);
     }

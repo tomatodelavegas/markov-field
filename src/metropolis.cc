@@ -35,12 +35,9 @@ static cmkv::rgb8_t change_pixel_random(
 
 void metropolis(cmkv::image<cmkv::rgb8_t> &img,
                 const std::function<float(int, int)> &score,
-                size_t N,
-                float T_init,
-                float normal_std)
+                const params &params)
 {
-    // FIXME
-    (void)T_init;
+    // TODO; params.T_init
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
@@ -48,12 +45,12 @@ void metropolis(cmkv::image<cmkv::rgb8_t> &img,
     std::uniform_int_distribution<unsigned> x_dist(0, img.width - 1);
     std::uniform_int_distribution<unsigned> y_dist(0, img.height - 1);
 
-    std::normal_distribution<float> normal_dist(0, normal_std);
+    std::normal_distribution<float> normal_dist(0, params.normal_std);
     std::uniform_real_distribution<float> uniform_proba_dist(0.0f, 1.0f);
 
     auto pscores = create_pscores(img.width, img.height, score);
 
-    for (size_t n = 0; n < N; ++n)
+    for (size_t n = 0; n < params.N_iter; ++n)
     {
         auto x = x_dist(gen);
         auto y = y_dist(gen);

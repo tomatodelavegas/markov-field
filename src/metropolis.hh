@@ -4,11 +4,10 @@
 #include <functional>
 
 #include "image.hh"
+#include "params.hh"
 
 void metropolis(cmkv::image<cmkv::rgb8_t> &img,
                 const std::function<float(int, int)> &score,
-                size_t N,
-                float T_init,
-                float normal_std);
+                const params &params);
 
 #endif // METROPOLIS_HH
