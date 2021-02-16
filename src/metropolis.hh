@@ -6,8 +6,8 @@
 #include "image.hh"
 #include "params.hh"
 
-void metropolis(cmkv::image<cmkv::rgb8_t> &img,
-                const std::function<float(int, int)> &score,
+void metropolis(cmkv::image<std::uint8_t> &img,
+                const std::function<float(int, int)> &cost_fn,
                 const params &params);
 
 #endif // METROPOLIS_HH

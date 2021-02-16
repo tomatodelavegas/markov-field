@@ -6,7 +6,7 @@ params parse_argv(int argc, char *argv[])
 {
     params params;
     params.N_iter = 1'000'000;
-    params.T_init = 10'000;
+    params.T_init = 1'000;
     params.T_dec_factor = 0.9999;
     params.normal_std = 1.0;
 

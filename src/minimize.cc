@@ -3,7 +3,8 @@
 #include "metropolis.hh"
 
 #include <cmath>
-#include <iostream>
+#include <random>
+#include <limits>
 
 namespace cmkv
 {
@@ -20,9 +21,10 @@ namespace cmkv
     }
 
     /** Binarize an image */
-    static image<std::uint8_t> binarize_img(const image<cmkv::rgb8_t> &img)
+    template <typename T, typename U>
+    static image<T> binarize_img(const image<U> &img)
     {
-        auto result = image<std::uint8_t>(img.width, img.height);
+        auto result = image<T>(img.width, img.height);
         for (unsigned y = 0; y < img.height; ++y)
         {
             for (unsigned x = 0; x < img.width; ++x)
@@ -34,51 +36,46 @@ namespace cmkv
         return result;
     }
 
-    /** Compute the euclidian distance between the colors of two pixels */
-    static float norm2(cmkv::rgb8_t pix1, cmkv::rgb8_t pix2)
+    /** Fill an image with rnadom values */
+    template <typename T>
+    static void fill_with_random(image<T> &img)
     {
-        auto dr = pix1.r - pix2.r;
-        auto dg = pix1.g - pix2.g;
-        auto db = pix1.b - pix2.b;
+        std::random_device rd{};
+        std::mt19937 gen{rd()};
 
-        auto normsqr = dr * dr + dg * dg + db * db;
-        return std::sqrt(normsqr);
+        std::uniform_int_distribution<T> dist(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+        for (unsigned y = 0; y < img.height; ++y)
+        {
+            for (unsigned x = 0; x < img.width; ++x)
+            {
+                img(x, y) = dist(gen);
+            }
+        }
     }
 
     /** Minimize a RGB image to B&W "artistically" */
     image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img, const params &params)
     {
-        auto bin_img = binarize_img(img);
+        auto simple_bin_img = binarize_img<std::uint8_t, cmkv::rgb8_t>(img);
 
-        auto score = [&img, &bin_img](int x, int y) {
-            auto &pix = img(x, y);
-            auto &bin_pix = bin_img(x, y);
+        auto bin_img = image<std::uint8_t>(img.width, img.height);
+        fill_with_random(bin_img);
+
+        auto cost_fn = [&bin_img, &simple_bin_img](int x, int y) {
+            float pix = bin_img(x, y);
+            float bin_pix = simple_bin_img(x, y);
 
             // Difference between current pix and basic binarized
-            auto bin_score = norm2(pix, bin_pix);
+            // 1 when different, 0 when same
+            float bin_cost = std::abs(pix - bin_pix);
 
             // TODO: Other conditions scores
 
-            return bin_score;
+            return bin_cost;
         };
 
-        metropolis(img, score, params);
-        return binarize_img(img);
+        metropolis(bin_img, cost_fn, params);
+        return bin_img;
     }
-
-    // image<std::uint8_t> minimize(const image<std::uint8_t> &img)
-    // {
-    //     // FIXME: replace the code below by yours!
-    //     auto result = image<std::uint8_t>(img.width, img.height);
-    //     for (std::size_t y = 0; y < img.height; y++)
-    //     {
-    //         for (std::size_t x = 0; x < img.width; x++)
-    //         {
-    //             result(x, y) = img(x, y) > 127u ? 255u : 0u;
-    //         }
-    //     }
-
-    //     return result;
-    // }
-
 } // namespace cmkv
