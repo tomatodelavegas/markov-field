@@ -7,6 +7,10 @@
 
 namespace cmkv
 {
+    /** Binarize a pixel (black or white) based on its luminance,
+     * which is more representative of the human perception than
+     * a simple threashold.
+     */
     static std::uint8_t binarize_human(rgb8_t pix)
     {
         auto luminance = 0.299 * pix.r + 0.587 * pix.g + 0.114 * pix.b;
@@ -15,6 +19,7 @@ namespace cmkv
         return is_white ? 255 : 0;
     }
 
+    /** Binarize an image */
     static image<std::uint8_t> binarize_img(const image<cmkv::rgb8_t> &img)
     {
         auto result = image<std::uint8_t>(img.width, img.height);
@@ -29,6 +34,7 @@ namespace cmkv
         return result;
     }
 
+    /** Compute the euclidian distance between the colors of two pixels */
     static float norm2(cmkv::rgb8_t pix1, cmkv::rgb8_t pix2)
     {
         auto dr = pix1.r - pix2.r;
@@ -39,6 +45,7 @@ namespace cmkv
         return std::sqrt(normsqr);
     }
 
+    /** Minimize a RGB image to B&W "artistically" */
     image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img, const params &params)
     {
         auto bin_img = binarize_img(img);

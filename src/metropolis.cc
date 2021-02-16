@@ -3,6 +3,7 @@
 #include <random>
 #include <algorithm>
 
+/** Create and initialize the pixel scores */
 static cmkv::image<float> create_pscores(
     int width, int height,
     const std::function<float(int, int)> &score)
@@ -21,6 +22,7 @@ static cmkv::image<float> create_pscores(
     return pscores;
 }
 
+/** Modify a pixel value based on a random normal distribution */
 static cmkv::rgb8_t change_pixel_random(
     cmkv::rgb8_t pix,
     std::normal_distribution<float> &normal_dist,
@@ -33,6 +35,7 @@ static cmkv::rgb8_t change_pixel_random(
     return pix;
 }
 
+/** Implementation of the metropolis algorithm */
 void metropolis(cmkv::image<cmkv::rgb8_t> &img,
                 const std::function<float(int, int)> &score,
                 const params &params)
