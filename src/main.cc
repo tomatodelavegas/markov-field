@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
   if (argc < 3)
   {
-    std::cerr << argv[0] << " input.png output.png [N_iter [T_init [normal_std]]]\n";
+    std::cerr << argv[0] << " input.png output.png [N_iter [T_init [T_dec_factor [normal_std]]]]\n";
     return EXIT_FAILURE;
   }
 

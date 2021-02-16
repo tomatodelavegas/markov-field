@@ -55,7 +55,7 @@ namespace cmkv
             auto &bin_pix = bin_img(x, y);
 
             // Difference between current pix and basic binarized
-            auto bin_score = -norm2(pix, bin_pix);
+            auto bin_score = norm2(pix, bin_pix);
 
             // TODO: Other conditions scores
 
@@ -63,7 +63,6 @@ namespace cmkv
         };
 
         metropolis(img, score, params);
-
         return binarize_img(img);
     }
 
