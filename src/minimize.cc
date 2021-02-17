@@ -8,50 +8,6 @@
 namespace cmkv
 {
     template <unsigned W, unsigned H>
-    image<float> cost_similar_neighbours_kernel()
-    {
-        auto kernel = image<float>(W, H);
-
-        for (unsigned y = 0; y < H; ++y)
-        {
-            for (unsigned x = 0; x < W; ++x)
-            {
-                kernel(x, y) = 1;
-            }
-        }
-
-        kernel(W / 2, H / 2) = -(W * H) + 1;
-
-        return kernel;
-    }
-
-    template <unsigned W, unsigned H>
-    float cost_similar_neighbours(const image<std::uint8_t> &img, int x, int y)
-    {
-        static auto kernel = cost_similar_neighbours_kernel<W, H>();
-
-        return std::abs(conv2D(img, kernel, x, y));
-    }
-
-    // template <unsigned W, unsigned H>
-    // image<float> cost_similar_neighbours_kernel()
-    // {
-    //     auto kernel = image<float>(W, H);
-
-    //     for (unsigned y = 0; y < H; ++y)
-    //     {
-    //         for (unsigned x = 0; x < W; ++x)
-    //         {
-    //             kernel(x, y) = 1;
-    //         }
-    //     }
-
-    //     kernel(W / 2, H / 2) = -8;
-
-    //     return kernel;
-    // }
-
-    template <unsigned W, unsigned H>
     float cost_top_left_movement(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, W, H>(std::array<float, 9>{
@@ -72,7 +28,59 @@ namespace cmkv
         static auto kernel = image_from_array<float, 5, 1>(std::array<float, 5>{
             1, 1, -4, 1, 1});
 
-        return conv2D(img, kernel, x, y);
+        return std::abs(conv2D(img, kernel, x, y));
+    }
+
+    float cost_cross(const image<std::uint8_t> &img, int x, int y)
+    {
+        static auto kernel = image_from_array<float, 3, 3>(std::array<float, 9>{
+            0, 1, 0,
+            1, -4, 1,
+            0, 1, 0});
+
+        return std::abs(conv2D(img, kernel, x, y));
+    }
+
+    float cost_diag(const image<std::uint8_t> &img, int x, int y)
+    {
+        static auto kernel = image_from_array<float, 5, 5>(std::array<float, 25>{
+            0, 0, 0, 0, 1,
+            0, 0, 0, 1, 0,
+            0, 0, -4, 0, 0,
+            0, 1, 0, 0, 0,
+            1, 0, 0, 0, 0});
+
+        return std::abs(conv2D(img, kernel, x, y));
+    }
+
+    float cost_spir(const image<std::uint8_t> &img, int x, int y)
+    {
+        static auto kernel = image_from_array<float, 7, 7>(std::array<float, 49>{
+            0, 0, 1, 1, 1, 1, 0,   //
+            0, 1, 1, 0, 0, 0, 0,   //
+            1, 0, 0, 1, 1, 1, 0,   //
+            1, 0, 0, -24, 0, 1, 0, //
+            1, 1, 0, 0, 0, 1, 1,   //
+            0, 1, 1, 1, 1, 1, 0,   //
+            0, 0, 1, 1, 0, 0, 0,   //
+        });
+
+        return std::abs(conv2D(img, kernel, x, y));
+    }
+
+    float cost_ring(const image<std::uint8_t> &img, int x, int y)
+    {
+        static auto kernel = image_from_array<float, 7, 7>(std::array<float, 49>{
+            1, 1, 1, 1, 1, 1, 1,      //
+            1, -1, -1, -1, -1, -1, 1, //
+            1, -1, 0, 0, 0, -1, 1,    //
+            1, -1, 0, 0, 0, -1, 1,    //
+            1, -1, 0, 0, 0, -1, 1,    //
+            1, -1, -1, -1, -1, -1, 1, //
+            1, 1, 1, 1, 1, 1, 1       //
+        });
+
+        return std::abs(conv2D(img, kernel, x, y));
     }
 
     /** Minimize a RGB image to B&W "artistically" */
@@ -93,16 +101,25 @@ namespace cmkv
             float bin_cost = std::abs(pix - bin_pix);
             bin_cost *= params.cost_muls[0];
 
-            float similar_neigh_cost = cost_similar_neighbours<3, 3>(bin_img, x, y);
-            similar_neigh_cost *= params.cost_muls[1];
-
-            float top_left_cost = cost_top_left_movement<3, 3>(bin_img, x, y);
-            top_left_cost *= params.cost_muls[2];
+            // float top_left_cost = cost_top_left_movement<3, 3>(bin_img, x, y);
+            // top_left_cost *= params.cost_muls[2];
 
             float hor_cost = cost_horizontal(bin_img, x, y);
-            hor_cost *= params.cost_muls[3];
+            hor_cost *= params.cost_muls[1];
 
-            return bin_cost + similar_neigh_cost + top_left_cost + hor_cost;
+            float cross_cost = cost_cross(bin_img, x, y);
+            cross_cost *= params.cost_muls[2];
+
+            float diag_cost = cost_diag(bin_img, x, y);
+            diag_cost *= params.cost_muls[3];
+
+            float spir_cost = cost_spir(bin_img, x, y);
+            spir_cost *= params.cost_muls[4];
+
+            float ring_cost = cost_ring(bin_img, x, y);
+            ring_cost *= params.cost_muls[5];
+
+            return bin_cost + hor_cost + cross_cost + diag_cost + spir_cost + ring_cost;
         };
 
         metropolis(bin_img, cost_fn, params);

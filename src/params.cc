@@ -14,10 +14,11 @@ params parse_argv(int argc, char *argv[])
     // Set unknown cost multipliers to 0
     for (unsigned i = 0; i < NB_MAX_COST_FN; ++i)
     {
-        params.cost_muls[i] = 1;
+        params.cost_muls[i] = 0;
     }
 
     // TODO: Default values for costs fn
+    params.cost_muls[0] = 1;
 
     if (argc >= 4)
     {

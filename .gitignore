@@ -4,6 +4,8 @@
 *.zip
 cmkv
 
+Makefile
+
 # Prerequisites
 *.d
 
