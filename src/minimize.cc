@@ -1,73 +1,78 @@
 #include "minimize.hh"
 
 #include "metropolis.hh"
+#include "image_utils.hh"
 
-#include <cmath>
-#include <random>
-#include <limits>
+#include <iostream>
 
 namespace cmkv
 {
-    /** Binarize a pixel (black or white) based on its luminance,
-     * which is more representative of the human perception than
-     * a simple threashold.
-     */
-    static std::uint8_t binarize_human(rgb8_t pix)
+    template <unsigned W, unsigned H>
+    image<float> cost_similar_neighbours_kernel()
     {
-        auto luminance = 0.299 * pix.r + 0.587 * pix.g + 0.114 * pix.b;
-        auto is_white = luminance >= 128;
+        auto kernel = image<float>(W, H);
 
-        return is_white ? 255 : 0;
-    }
-
-    /** Binarize an image */
-    template <typename T, typename U>
-    static image<T> binarize_img(const image<U> &img)
-    {
-        auto result = image<T>(img.width, img.height);
-        for (unsigned y = 0; y < img.height; ++y)
+        for (unsigned y = 0; y < H; ++y)
         {
-            for (unsigned x = 0; x < img.width; ++x)
+            for (unsigned x = 0; x < W; ++x)
             {
-                result(x, y) = binarize_human(img(x, y));
+                kernel(x, y) = 1;
             }
         }
 
-        return result;
+        kernel(W / 2, H / 2) = -(W * H) + 1;
+
+        return kernel;
     }
 
-    /** Fill an image with rnadom values */
-    template <typename T>
-    static void fill_with_random(image<T> &img)
+    template <unsigned W, unsigned H>
+    float cost_similar_neighbours(const image<std::uint8_t> &img, int x, int y)
     {
-        std::random_device rd{};
-        std::mt19937 gen{rd()};
+        static auto kernel = cost_similar_neighbours_kernel<W, H>();
 
-        std::uniform_int_distribution<T> dist(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-        for (unsigned y = 0; y < img.height; ++y)
-        {
-            for (unsigned x = 0; x < img.width; ++x)
-            {
-                img(x, y) = dist(gen);
-            }
-        }
+        return std::abs(conv2D(img, kernel, x, y));
     }
 
-    float conv2D(const image<cmkv::rgb8_t> &img, const image<float> &kernel, int x, int y)
+    // template <unsigned W, unsigned H>
+    // image<float> cost_similar_neighbours_kernel()
+    // {
+    //     auto kernel = image<float>(W, H);
+
+    //     for (unsigned y = 0; y < H; ++y)
+    //     {
+    //         for (unsigned x = 0; x < W; ++x)
+    //         {
+    //             kernel(x, y) = 1;
+    //         }
+    //     }
+
+    //     kernel(W / 2, H / 2) = -8;
+
+    //     return kernel;
+    // }
+
+    template <unsigned W, unsigned H>
+    float cost_top_left_movement(const image<std::uint8_t> &img, int x, int y)
     {
-        int radius_x = std::min(kernel., img.width);
-        radius = std::min(radius, img.height);
+        static auto kernel = image_from_array<float, W, H>(std::array<float, 9>{
+            -2, -1, 0,
+            -1, 0, -1,
+            0, -1, -2});
 
-        int mid_radius = radius / 2;
+        static auto kernel2 = image_from_array<float, W, H>(std::array<float, 9>{
+            0, 1, 2,
+            1, 0, 1,
+            2, 1, 0});
 
-        x = std::max(x - mid_radius, 0);
-        y = std::max(y - mid_radius, 0);
-
+        return conv2D(img, kernel, x, y) + conv2D(img, kernel2, x, y);
     }
 
-    float cost_similar_neighbours(const image<cmkv::rgb8_t> &img, int x, int y, unsigned radius)
+    float cost_horizontal(const image<std::uint8_t> &img, int x, int y)
     {
+        static auto kernel = image_from_array<float, 5, 1>(std::array<float, 5>{
+            1, 1, -4, 1, 1});
+
+        return conv2D(img, kernel, x, y);
     }
 
     /** Minimize a RGB image to B&W "artistically" */
@@ -77,6 +82,7 @@ namespace cmkv
 
         auto bin_img = image<std::uint8_t>(img.width, img.height);
         fill_with_random(bin_img);
+        image_threshold<std::uint8_t>(bin_img, 128, 0, 255);
 
         auto cost_fn = [&bin_img, &simple_bin_img, &params](int x, int y) {
             float pix = bin_img(x, y);
@@ -85,10 +91,18 @@ namespace cmkv
             // Difference between current pix and basic binarized
             // 1 when different, 0 when same
             float bin_cost = std::abs(pix - bin_pix);
+            bin_cost *= params.cost_muls[0];
 
-            // TODO: Other conditions scores
+            float similar_neigh_cost = cost_similar_neighbours<3, 3>(bin_img, x, y);
+            similar_neigh_cost *= params.cost_muls[1];
 
-            return params.cost_muls[0] * bin_cost;
+            float top_left_cost = cost_top_left_movement<3, 3>(bin_img, x, y);
+            top_left_cost *= params.cost_muls[2];
+
+            float hor_cost = cost_horizontal(bin_img, x, y);
+            hor_cost *= params.cost_muls[3];
+
+            return bin_cost + similar_neigh_cost + top_left_cost + hor_cost;
         };
 
         metropolis(bin_img, cost_fn, params);

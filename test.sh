@@ -17,7 +17,7 @@ normal_std="0.01 0.1 1"
 mkdir -p tmp
 rm tmp/*
 
-make -j
+make
 
 for N in $N_iters
 do
