@@ -54,6 +54,22 @@ namespace cmkv
         }
     }
 
+    float conv2D(const image<cmkv::rgb8_t> &img, const image<float> &kernel, int x, int y)
+    {
+        int radius_x = std::min(kernel., img.width);
+        radius = std::min(radius, img.height);
+
+        int mid_radius = radius / 2;
+
+        x = std::max(x - mid_radius, 0);
+        y = std::max(y - mid_radius, 0);
+
+    }
+
+    float cost_similar_neighbours(const image<cmkv::rgb8_t> &img, int x, int y, unsigned radius)
+    {
+    }
+
     /** Minimize a RGB image to B&W "artistically" */
     image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img, const params &params)
     {
