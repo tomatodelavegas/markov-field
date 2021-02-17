@@ -1,6 +1,8 @@
 #ifndef PARAMS_HH
 #define PARAMS_HH
 
+constexpr unsigned NB_MAX_COST_FN = 10;
+
 struct params
 {
     /** The number of iterations */
@@ -22,6 +24,9 @@ struct params
      * A higher value means greater changes.
      */
     float normal_std;
+
+    /** The cost functions multipliers */
+    float cost_muls[NB_MAX_COST_FN];
 };
 
 /** Extract the parameters from the program arguments

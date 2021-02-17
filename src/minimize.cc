@@ -62,7 +62,7 @@ namespace cmkv
         auto bin_img = image<std::uint8_t>(img.width, img.height);
         fill_with_random(bin_img);
 
-        auto cost_fn = [&bin_img, &simple_bin_img](int x, int y) {
+        auto cost_fn = [&bin_img, &simple_bin_img, &params](int x, int y) {
             float pix = bin_img(x, y);
             float bin_pix = simple_bin_img(x, y);
 
@@ -72,7 +72,7 @@ namespace cmkv
 
             // TODO: Other conditions scores
 
-            return bin_cost;
+            return params.cost_muls[0] * bin_cost;
         };
 
         metropolis(bin_img, cost_fn, params);
