@@ -2,6 +2,8 @@
 
 namespace cmkv
 {
+    constexpr auto DEBUG_ASSERTS = false;
+
     std::uint8_t binarize_human(rgb8_t pix)
     {
         auto luminance = 0.299 * pix.r + 0.587 * pix.g + 0.114 * pix.b;
@@ -12,48 +14,48 @@ namespace cmkv
 
     float conv2D(const image<std::uint8_t> &img, const image<float> &kernel, int x, int y)
     {
+        // Make sure the kernel is not larger than the image
+        // Asserting these conditions also makes the compiled code faster!
         assert(img.height >= kernel.height);
         assert(img.width >= kernel.width);
 
-        int mid_kernel_height = kernel.height / 2;
-        int mid_kernel_width = kernel.width / 2;
-
-        float res = 0;
+        unsigned mid_kernel_height = kernel.height / 2;
+        unsigned mid_kernel_width = kernel.width / 2;
 
         // y_cell = y + yk - mid_kernel_height
         // 0 <= y_cell < img.height
-        auto yk_start = std::max<int>(0, mid_kernel_height - y);
-        auto yk_end = std::min<int>(kernel.height, img.height - y + mid_kernel_height);
+        // 0 <= yk <= kernel.height
+        // These conditions can be used to find yk_start & yk_end
 
-        // yk + y - mkh < imgh
-        // yk <= imgh + mkh - y
-        // yk <= kh
-
-        // yk = min(kh, (imgh - y) + mkh)
+        // The min/max must be done with type `int` to avoid unsigned underflow
+        unsigned yk_start = std::max<int>(0, mid_kernel_height - y);
+        unsigned yk_end = std::min(kernel.height, img.height - y + mid_kernel_height);
 
         // Same for x
-        auto xk_start = std::max<int>(0, mid_kernel_width - x);
-        auto xk_end = std::min<int>(kernel.width, img.width - x + mid_kernel_width);
+        unsigned xk_start = std::max<int>(0, mid_kernel_width - x);
+        unsigned xk_end = std::min(kernel.width, img.width - x + mid_kernel_width);
 
-        assert(yk_start >= 0);
-        assert(yk_start <= static_cast<int>(kernel.height));
-        assert(yk_end >= 0);
-        assert(yk_end <= static_cast<int>(kernel.height));
-        assert(xk_start >= 0);
-        assert(xk_start <= static_cast<int>(kernel.width));
-        assert(xk_end >= 0);
-        assert(xk_end <= static_cast<int>(kernel.width));
-
-        for (int yk = yk_start; yk < yk_end; ++yk)
+        // Some debug asserts to make sure the formulas are correct
+        // However, these slow down the hotpath so they can be turned off
+        if constexpr (DEBUG_ASSERTS)
         {
-            int y_cell = y + yk - mid_kernel_height;
+            assert(yk_start <= kernel.height);
+            assert(yk_end <= kernel.height);
+            assert(xk_start <= kernel.width);
+            assert(xk_end <= kernel.width);
+        }
 
-            for (int xk = xk_start; xk < xk_end; ++xk)
+        float res = 0;
+        unsigned y_cell = y - mid_kernel_height + yk_start;
+        for (unsigned yk = yk_start; yk < yk_end; ++yk, ++y_cell)
+        {
+            float sub_res = 0;
+            unsigned x_cell = x - mid_kernel_width + xk_start;
+            for (unsigned xk = xk_start; xk < xk_end; ++xk, ++x_cell)
             {
-                int x_cell = x + xk - mid_kernel_width;
-
                 res += kernel(xk, yk) * static_cast<float>(img(x_cell, y_cell));
             }
+            res += sub_res;
         }
 
         return res;
