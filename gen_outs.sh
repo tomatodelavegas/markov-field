@@ -13,7 +13,7 @@ T_dec=0.9999
 
 mul_bin=1
 muls_diag="0 1"
-muls_hor="0 0.75"
+muls_hor="0 1"
 muls_neigh="0 1"
 muls_corners="0 1"
 

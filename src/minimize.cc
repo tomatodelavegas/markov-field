@@ -53,36 +53,6 @@ namespace cmkv
         return std::abs(conv2D(img, kernel, x, y));
     }
 
-    // static float cost_spir(const image<std::uint8_t> &img, int x, int y)
-    // {
-    //     static auto kernel = image_from_array<float, 7, 7>({
-    //         0, 0, 1, 1, 1, 1, 0,
-    //         0, 1, 1, 0, 0, 0, 0,
-    //         1, 0, 0, 1, 1, 1, 0,
-    //         1, 0, 0, -24, 0, 1, 0,
-    //         1, 1, 0, 0, 0, 1, 1,
-    //         0, 1, 1, 1, 1, 1, 0,
-    //         0, 0, 1, 1, 0, 0, 0, //
-    //     });
-
-    //     return std::abs(conv2D(img, kernel, x, y));
-    // }
-
-    // static float cost_ring(const image<std::uint8_t> &img, int x, int y)
-    // {
-    //     static auto kernel = image_from_array<float, 7, 7>({
-    //         1, 1, 1, 1, 1, 1, 1,
-    //         1, -1, -1, -1, -1, -1, 1,
-    //         1, -1, 0, 0, 0, -1, 1,
-    //         1, -1, 0, 0, 0, -1, 1,
-    //         1, -1, 0, 0, 0, -1, 1,
-    //         1, -1, -1, -1, -1, -1, 1,
-    //         1, 1, 1, 1, 1, 1, 1 //
-    //     });
-
-    //     return std::abs(conv2D(img, kernel, x, y));
-    // }
-
     /** Minimize a RGB image to B&W "artistically" */
     image<std::uint8_t> minimize(image<cmkv::rgb8_t> &img, const params &params)
     {
