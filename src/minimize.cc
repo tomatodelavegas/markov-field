@@ -3,12 +3,10 @@
 #include "metropolis.hh"
 #include "image_utils.hh"
 
-#include <iostream>
-
 namespace cmkv
 {
     template <unsigned W, unsigned H>
-    float cost_top_left_movement(const image<std::uint8_t> &img, int x, int y)
+    static float cost_top_left_movement(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, W, H>(std::array<float, 9>{
             -2, -1, 0,
@@ -23,7 +21,7 @@ namespace cmkv
         return conv2D(img, kernel, x, y) + conv2D(img, kernel2, x, y);
     }
 
-    float cost_horizontal(const image<std::uint8_t> &img, int x, int y)
+    static float cost_horizontal(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, 5, 1>(std::array<float, 5>{
             1, 1, -4, 1, 1});
@@ -31,7 +29,7 @@ namespace cmkv
         return std::abs(conv2D(img, kernel, x, y));
     }
 
-    float cost_cross(const image<std::uint8_t> &img, int x, int y)
+    static float cost_cross(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, 3, 3>(std::array<float, 9>{
             0, 1, 0,
@@ -41,7 +39,7 @@ namespace cmkv
         return std::abs(conv2D(img, kernel, x, y));
     }
 
-    float cost_diag(const image<std::uint8_t> &img, int x, int y)
+    static float cost_diag(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, 5, 5>(std::array<float, 25>{
             0, 0, 0, 0, 1,
@@ -53,7 +51,7 @@ namespace cmkv
         return std::abs(conv2D(img, kernel, x, y));
     }
 
-    float cost_spir(const image<std::uint8_t> &img, int x, int y)
+    static float cost_spir(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, 7, 7>(std::array<float, 49>{
             0, 0, 1, 1, 1, 1, 0,   //
@@ -68,7 +66,7 @@ namespace cmkv
         return std::abs(conv2D(img, kernel, x, y));
     }
 
-    float cost_ring(const image<std::uint8_t> &img, int x, int y)
+    static float cost_ring(const image<std::uint8_t> &img, int x, int y)
     {
         static auto kernel = image_from_array<float, 7, 7>(std::array<float, 49>{
             1, 1, 1, 1, 1, 1, 1,      //
@@ -89,8 +87,7 @@ namespace cmkv
         auto simple_bin_img = binarize_img<std::uint8_t, cmkv::rgb8_t>(img);
 
         auto bin_img = image<std::uint8_t>(img.width, img.height);
-        fill_with_random(bin_img);
-        image_threshold<std::uint8_t>(bin_img, 128, 0, 255);
+        fill_with_either<std::uint8_t>(bin_img, 0, 255);
 
         auto cost_fn = [&bin_img, &simple_bin_img, &params](int x, int y) {
             float pix = bin_img(x, y);

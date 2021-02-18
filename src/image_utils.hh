@@ -5,7 +5,6 @@
 
 #include <array>
 #include <random>
-#include <limits>
 
 namespace cmkv
 {
@@ -34,36 +33,19 @@ namespace cmkv
         return result;
     }
 
-    /** Fill an image with rnadom values */
-    template <typename T>
-    void fill_with_random(image<T> &img)
-    {
-        std::random_device rd{};
-        std::mt19937 gen{rd()};
-
-        std::uniform_int_distribution<T> dist(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-        for (unsigned y = 0; y < img.height; ++y)
-        {
-            for (unsigned x = 0; x < img.width; ++x)
-            {
-                img(x, y) = dist(gen);
-            }
-        }
-    }
-
-    /** Apply a threshold to the image, replacing values higher than
-     * threshold with `high` and values lower than threshold with `low`.
+    /** Fill an image with either `low` or `high` randomly for each pixel,
+     * each value with the same probability (of 0.5).
      */
     template <typename T>
-    void image_threshold(image<T> &img, T threshold, T low, T high)
+    void fill_with_either(image<T> &img, T low, T high)
     {
+        static std::minstd_rand gen{std::random_device{}()};
+
         for (unsigned y = 0; y < img.height; ++y)
         {
             for (unsigned x = 0; x < img.width; ++x)
             {
-                auto &pix = img(x, y);
-                pix = (pix >= threshold) ? high : low;
+                img(x, y) = (gen() & 1) ? high : low;
             }
         }
     }

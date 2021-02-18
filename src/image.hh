@@ -37,6 +37,14 @@ namespace cmkv
         {
         }
 
+        image(unsigned c_width, unsigned c_height, std::vector<T> &&c_data)
+            : width(c_width),
+              height(c_height),
+              data(std::make_shared<std::vector<T>>(std::move(c_data)))
+        {
+            assert(data->size() == c_width * c_height);
+        }
+
         image(const image &) = default;
         void operator=(const image &) = delete;
 
@@ -44,18 +52,18 @@ namespace cmkv
         const unsigned height;
         std::shared_ptr<std::vector<T>> data;
 
-        bool has(int x, int y) const noexcept
+        bool has(unsigned x, unsigned y) const noexcept
         {
-            return x >= 0 and y >= 0 and x < static_cast<int>(width) and y < static_cast<int>(height);
+            return x < width && y < height;
         }
 
-        T &operator()(int x, int y)
+        T &operator()(unsigned x, unsigned y)
         {
             assert(has(x, y));
             return (*data)[y * width + x];
         }
 
-        T operator()(int x, int y) const
+        T operator()(unsigned x, unsigned y) const
         {
             assert(has(x, y));
             return (*data)[y * width + x];
