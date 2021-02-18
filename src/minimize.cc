@@ -5,20 +5,20 @@
 
 namespace cmkv
 {
-    // static float cost_top_left_movement(const image<std::uint8_t> &img, int x, int y)
-    // {
-    //     static auto kernel = image_from_array<float, 3, 3>(std::array<float, 9>{
-    //         -2, -1, 0,
-    //         -1, 0, -1,
-    //         0, -1, -2});
+    static float cost_corners(const image<std::uint8_t> &img, int x, int y)
+    {
+        static auto kernel = image_from_array<float, 3, 3>(std::array<float, 9>{
+            -2, -1, 0,
+            -1, 0, -1,
+            0, -1, -2});
 
-    //     static auto kernel2 = image_from_array<float, 3, 3>(std::array<float, 9>{
-    //         0, 1, 2,
-    //         1, 0, 1,
-    //         2, 1, 0});
+        static auto kernel2 = image_from_array<float, 3, 3>(std::array<float, 9>{
+            0, 1, 2,
+            1, 0, 1,
+            2, 1, 0});
 
-    //     return conv2D(img, kernel, x, y) + conv2D(img, kernel2, x, y);
-    // }
+        return conv2D(img, kernel, x, y) + conv2D(img, kernel2, x, y);
+    }
 
     static float cost_horizontal(const image<std::uint8_t> &img, int x, int y)
     {
@@ -111,16 +111,11 @@ namespace cmkv
             float neigh_cost = cost_neighbours(bin_img, x, y);
             neigh_cost *= params.cost_muls[3];
 
-            // float top_left_cost = cost_top_left_movement<3, 3>(bin_img, x, y);
-            // top_left_cost *= params.cost_muls[2];
+            // Corners
+            float corners_cost = cost_corners(bin_img, x, y);
+            corners_cost *= params.cost_muls[4];
 
-            // float spir_cost = cost_spir(bin_img, x, y);
-            // spir_cost *= params.cost_muls[4];
-
-            // float ring_cost = cost_ring(bin_img, x, y);
-            // ring_cost *= params.cost_muls[5];
-
-            return bin_cost + diag_cost + hor_cost + neigh_cost;
+            return bin_cost + diag_cost + hor_cost + neigh_cost + corners_cost;
         };
 
         metropolis(bin_img, cost_fn, params);

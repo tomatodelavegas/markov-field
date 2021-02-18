@@ -16,10 +16,11 @@ params parse_argv(int argc, char *argv[])
     }
 
     // Default values for costs fn
-    params.cost_muls[0] = 1;    // Cost: abs diff with basic binarized
-    params.cost_muls[1] = 0.75; // Cost: similar top-left/bottom-right diagonal
-    // params.cost_muls[2] = 1;    // Cost: similar horizontal
-    // params.cost_muls[3] = 0.75; // Cost: similar neighbours
+    params.cost_muls[0] = 1; // Cost: abs diff with basic binarized
+    params.cost_muls[1] = 1; // Cost: similar top-left/bottom-right diagonal
+    // params.cost_muls[2] = 1; // Cost: similar horizontal
+    // params.cost_muls[3] = 1; // Cost: similar neighbours
+    // params.cost_muls[4] = 1; // Cost: corners
 
     if (argc >= 4)
     {

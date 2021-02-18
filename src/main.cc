@@ -11,11 +11,13 @@ int main(int argc, char *argv[])
     std::cerr << argv[0] << " input.png output.png [PARAMS]\n"
               << "  where PARAMS are the following optional arguments (in that order):\n";
 
-    constexpr const char *opt_args[] = {"N_iter", "T_init", "T_dec_factor", "cost_muls... (multiples values)"};
+    constexpr const char *opt_args[] = {"N_iter", "T_init", "T_dec_factor", "bin_mul", "diag_mul", "hor_mul", "neigh_mul", "corners_mul"};
     for (const auto &arg : opt_args)
     {
       std::cerr << "    - " << arg << '\n';
     }
+
+    std::cerr << "  (for muls, 0 disable the corresponding modifier, 1 is a good starting value)\n";
 
     return EXIT_FAILURE;
   }
