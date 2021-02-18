@@ -53,7 +53,7 @@ void metropolis(cmkv::image<std::uint8_t> &img,
 
     for (size_t n = 0; n < params.N_iter; ++n)
     {
-        auto x = randuint(gen, img.height);
+        auto x = randuint(gen, img.width);
         auto y = randuint(gen, img.height);
 
         auto &pix_loc = img(x, y);
