@@ -1,15 +1,13 @@
 #include "params.hh"
 
 #include <string>
-#include <iostream>
 
 params parse_argv(int argc, char *argv[])
 {
     params params;
     params.N_iter = 1'000'000;
-    params.T_init = 1'000;
+    params.T_init = 1'000'000;
     params.T_dec_factor = 0.9999;
-    params.normal_std = 1.0;
 
     // Set unknown cost multipliers to 0
     for (unsigned i = 0; i < NB_MAX_COST_FN; ++i)
@@ -17,8 +15,11 @@ params parse_argv(int argc, char *argv[])
         params.cost_muls[i] = 0;
     }
 
-    // TODO: Default values for costs fn
-    params.cost_muls[0] = 1;
+    // Default values for costs fn
+    params.cost_muls[0] = 1;    // Cost: abs diff with basic binarized
+    params.cost_muls[1] = 0.75; // Cost: similar top-left/bottom-right diagonal
+    // params.cost_muls[2] = 1;    // Cost: similar horizontal
+    // params.cost_muls[3] = 0.75; // Cost: similar neighbours
 
     if (argc >= 4)
     {
@@ -37,14 +38,9 @@ params parse_argv(int argc, char *argv[])
 
     if (argc >= 7)
     {
-        params.normal_std = std::stof(argv[6]);
-    }
-
-    if (argc >= 8)
-    {
-        for (unsigned i = 7; i < static_cast<unsigned>(argc) && i - 7 < NB_MAX_COST_FN; ++i)
+        for (unsigned i = 6; i < static_cast<unsigned>(argc) && i - 6 < NB_MAX_COST_FN; ++i)
         {
-            params.cost_muls[i - 7] = std::stof(argv[i]);
+            params.cost_muls[i - 6] = std::stof(argv[i]);
         }
     }
 

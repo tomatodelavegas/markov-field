@@ -20,11 +20,6 @@ struct params
      */
     float T_dec_factor;
 
-    /** The standard deviation when modifing a pixel.
-     * A higher value means greater changes.
-     */
-    float normal_std;
-
     /** The cost functions multipliers */
     float cost_muls[NB_MAX_COST_FN];
 };
