@@ -34,7 +34,7 @@ do
             for mul_corners in $muls_corners
             do
                 echo "   mul_corners = $mul_corners"
-                OUTPUT="tmp/output_b${mul_bin}_d${mul_diag}_h${mul_hor}_n${mul_neigh}_c${mul_corners}.png"
+                OUTPUT="tmp/b${mul_bin}_d${mul_diag}_h${mul_hor}_n${mul_neigh}_c${mul_corners}.png"
                 ./cmkv $INPUT $OUTPUT $N $T $T_dec $mul_bin $mul_diag $mul_hor $mul_neigh $mul_corners
             done
         done
